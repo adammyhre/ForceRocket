@@ -6,8 +6,21 @@ using UnityEngine.SceneManagement;
 public class CollisionHandler : MonoBehaviour {
 
     [SerializeField] float levelLoadDelay = 2f;
+    [SerializeField] AudioClip explosionSound;
+    [SerializeField] AudioClip victorySound;
+    [SerializeField] ParticleSystem explosionParticles;
+    [SerializeField] ParticleSystem victoryParticles;
+
+    AudioSource audioSource;
+    bool isTransitioning = false;
+
+    void Start() {
+        audioSource = GetComponent<AudioSource>();
+    }
 
     void OnCollisionEnter(Collision other) {
+        if(isTransitioning) { return; }
+
         switch(other.gameObject.tag) {
             case "Finish":
                 StartSuccessSequence();
@@ -22,18 +35,25 @@ public class CollisionHandler : MonoBehaviour {
     }
 
     void StartCrashSequence() {
+        isTransitioning = true;
         GetComponent<Movement>().enabled = false;
         StartCoroutine(ReloadScene());
     }
 
     void StartSuccessSequence() {
+        isTransitioning = true;
         GetComponent<Movement>().enabled = false;
         StartCoroutine(LoadNextLevel());
-
     }
 
     IEnumerator LoadNextLevel() {
+        audioSource.Stop();
+        audioSource.PlayOneShot(victorySound);
+        victoryParticles.Play();
+        isTransitioning = true;
+
         yield return new WaitForSeconds(levelLoadDelay);
+
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         int nextSceneIndex = 
             (currentSceneIndex == SceneManager.sceneCountInBuildSettings - 1)
@@ -44,6 +64,10 @@ public class CollisionHandler : MonoBehaviour {
     }
 
     IEnumerator ReloadScene() {
+        audioSource.Stop();
+        audioSource.PlayOneShot(explosionSound);
+        explosionParticles.Play();
+
         yield return new WaitForSeconds(levelLoadDelay);
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
