@@ -36,7 +36,7 @@ public class CollisionHandler : MonoBehaviour {
         yield return new WaitForSeconds(levelLoadDelay);
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         int nextSceneIndex = 
-            (currentSceneIndex == SceneManager.sceneCountInBuildSettings)
+            (currentSceneIndex == SceneManager.sceneCountInBuildSettings - 1)
             ? 0
             : currentSceneIndex + 1;
         
